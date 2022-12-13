@@ -74,7 +74,7 @@ app.get('/documentation', (req, res) => {
   });
 
 //log requests using Morgan’s “common” format
-app.use(morgan('commom'));
+app.use(morgan('common'));
 
 //error handling
 app.use((err, req, res, next) => {
