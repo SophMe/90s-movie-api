@@ -3,16 +3,127 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="../styles.css">
     <title>Movie API Documentation</title>
 </head>
+<header>Movie API Documentation</header>
 <body>
     <h1>Objective</h1>
     <p>
-        To build the server-side component of a “movies” web application. The web application will provide users with access to information about different movies, directors, and genres. Users will be able to sign up, update their personal information, and create a list of their favorite movies.
+        To build the server-side component of a “movies” web application. the web application will provide users with access to information about different movies, directors, and genres. Users will be able to sign up, update their personal information, and create a list of their favorite movies.
     </p>
-    <h1>Context</h1>
+
+    <h2>Context</h2>
     <p>
         Creating an REST API for an app that interacts with a database and stores data about different movies. 
     </p>
+
+    <h2>Features</h2>
+    <ul>
+        <li>Return a list of ALL movies to the user</li>
+        <li>Return title of a single movie by title to the user</li>
+        <li>Return data about a genre (and description) by name (e.g., “Drama”)</li>
+        <li>Return data about a director (birth year) by name</li>
+        <li>Allow new users to register</li>
+        <li>Allow users to update their user info (username)</li>
+        <li>Allow users to add a movie to their list of favorites (showing only a text that a movie has been added)</li>
+        <li>Allow users to remove a movie from their list of favorites (showing only a text that a movie has been removed)</li>
+        <li>Allow existing users to deregister (showing only a text that a user email has been removed</li>
+    </ul>
+
+    <h2>URL Endpoints</h2>
+    <table>
+        <tr>
+            <th>Request</th>
+            <th>URL</th>
+            <th>HTTP Method</th>
+            <th>Request body data format</th>
+            <th>Response body data format</th>
+        </tr>
+        <tr>
+            <td>Get a list of movies</td>
+            <td>/movies/:title</td>
+            <td>GET</td>
+            <td>None</td>
+            <td>A JSON object holding data about all the movies</td>
+        </tr>
+        <tr>
+            <td>Get director by title</td>
+            <td>/movies/director</td>
+            <td>GET</td>
+            <td> - </td>
+            <td>None</td>
+            <td>A JSON object holding data about the director</td>
+        </tr>
+        <tr>
+            <td>Get genre by genre</td>
+            <td>/movies/genre/:genre</td>
+            <td>GET</td>
+            <td>:genre</td>
+            <td>None</td>
+            <td>A JSON object holding data about the genre</td>
+        </tr>
+        <tr>
+            <td>Get director birthyear by name</td>
+            <td>/movies/director/:name</td>
+            <td>GET</td>
+            <td>:name</td>
+            <td>None</td>
+            <td>A JSON object holding data about a single director</td>
+        </tr>
+        <tr>
+            <td>Allow new user to register</td>
+            <td>/users</td>
+            <td>POST</td>
+            <td> - </td>
+            <td>A JSON object holding data about the student to add, structured like:
+                {
+                name : "Charlotte",
+                favoriteMovies: []
+                }
+            </td>
+            <td>
+                A JSON object holding data about the student to add, including an ID:
+                {
+                id : "1",
+                name : "Charlotte",
+                favoriteMovies: []
+                }
+            </td>
+        </tr>
+        <tr>
+            <td>Allow user to update their username</td>
+            <td>/users/:id</td>
+            <td>UPDATE</td>
+            <td>:id</td>
+            <td>None</td>
+            <td>A JSON object holding data about the updated information</td>
+        </tr>
+        <tr>
+            <td>Allow user to add a movie</td>
+            <td>/users/:id/:title</td>
+            <td>POST</td>
+            <td>:id, :title</td>
+            <td>None</td>
+            <td>A JSON Object holding data about the User and the movie that was added</td>
+        </tr>
+        <tr>
+            <td>Allow user remove a movie</td>
+            <td>/users/:id/:title</td>
+            <td>DELETE</td>
+            <td>:id, :title</td>
+            <td>None</td>
+            <td>A JSON Object holding data about the User and the movie that was removed</td>
+        </tr>
+        <tr>
+            <td>Allow existing user to deregister</td>
+            <td>/users/:id</td>
+            <td>DELETE</td>
+            <td>:id</td>
+            <td>None</td>
+            <td>A text message that the movie was successfully removed</td>
+        </tr>
+    </table>
+
 </body>
 </html>
