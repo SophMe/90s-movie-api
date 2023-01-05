@@ -6,7 +6,17 @@ const express = require('express'),
 //declare variable that encapsulates Express' functionality, will route HTTP requests and responses	
 const app = express();
 
-app.use(bodyParser.json());
+// integrate Mongoose into the REST API
+const mongoose = require('mongoose');
+const Models = require('.models.js');
+
+const Movies = Models.Movie; // both defined in models.js
+const Users = Models.User;
+
+//get all movies with the same genre
+//const genre = movies.filter(movie => movie.genre.name === genreName || movie.genre === genreName);
+
+app.use(bodyParser.json()); //MIDDLEWARE will run every time we go to a specific route
 
 let users = [
 	{
@@ -138,6 +148,7 @@ let movies = [
 	},
 ];
 
+//ROUTES with Express
 //CREATE new user
 app.post('/users', (req, res) => {
 	//bodyParser enables us to request from the body object
