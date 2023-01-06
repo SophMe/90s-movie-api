@@ -6,12 +6,17 @@ const express = require('express'),
 //declare variable that encapsulates Express' functionality, will route HTTP requests and responses	
 const app = express();
 
+app.use.apply(bodyParser.urlencoded({extended: true}));
+
 // integrate Mongoose into the REST API
 const mongoose = require('mongoose');
 const Models = require('.models.js');
 
 const Movies = Models.Movie; // both defined in models.js
 const Users = Models.User;
+
+// allow Mongoose to connect to the database
+mongoose.connect('mongodb://localhost:27017/movie-apiDB', { useNewUrlParser: true, useUnifiedTopology: true });
 
 //get all movies with the same genre
 //const genre = movies.filter(movie => movie.genre.name === genreName || movie.genre === genreName);
