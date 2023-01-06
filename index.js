@@ -9,12 +9,26 @@ const app = express();
 // integrate Mongoose into the REST API
 const mongoose = require('mongoose');
 const Models = require('./models.js');
-
+ 
 const Movies = Models.Movie; // both defined in models.js
 const Users = Models.User;
+const Genre = Models.Genre;
+const Director = Models.Director;
+
+// Deprecation warning - suppress
+mongoose.set('strictQuery', true);
 
 // allow Mongoose to connect to the database
-mongoose.connect('mongodb://localhost:27017/movie-apiDB', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect('mongodb://127.0.0.1:27017/movie-apiDB', { useNewUrlParser: true, useUnifiedTopology: true });
+
+// trying to fix "buffering timed out"
+// async function run() {
+//   await mongoose.connect('mongodb://127.0.0.1:27017/movie-apiDB');
+//   mongoose.model('User', schema);
+
+//   await mongoose.model('User').findOne(); // does not work!
+// }
+
 app.use(bodyParser.json()); //MIDDLEWARE will run every time we go to a specific route
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -169,13 +183,13 @@ app.post('/users', (req, res) => {
 					.then((user) => {res.status(201).json(user) })
 				.catch((error) => {
 					console.error(error);
-					res.status(500).send('Error' + error);
+					res.status(500).send('Error: ' + error);
 				})
 			}
 		})
 		.catch((error) => {
 			console.error(error);
-			res.status(500).send('Error' + error);
+			res.status(500).send('Error: ' + error);
 		});
 	});
 
