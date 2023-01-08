@@ -129,7 +129,7 @@ app.get('/users', (req, res) => {
 		res.status(201).json(users);
 	  })
 	  .catch((err) => {
-		console.error(erro;
+		console.error(err);
 		res.status(500).send('Error: ' + err);
 	  });
 });
@@ -167,23 +167,7 @@ app.put('/users/:Username', (req, res) => {
   });
 });
 
-//DELETE user
-app.delete('/users/:Username', (req, res) => {
-  Users.findOneAndRemove({Username: req.params.Username})
-    .then((user) => {
-      if (!user) {
-        res.status(400).send(req.params.Username + ' was not found');
-      } else {
-        res.status(200).send(req.params.Username + ' was deleted.');
-      }
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).send('Error: ' + err);
-    });
-});
-
-//CREATE (add) movie to favorites
+//CREATE (add) movie to favorites 
 app.post('/users/:Username/movies/:MovieID', (req, res) => {
   Users.findOneAndUpdate({Username: req.params.Username}, {
      $push: {FavoriteMovies: req.params.MovieID}
@@ -199,7 +183,7 @@ app.post('/users/:Username/movies/:MovieID', (req, res) => {
   });
 });
 
-//DELETE movie from favorites
+//DELETE movie from favorites !!old
 app.delete('/users/:id/:movieTitle', (req, res) => {
 	const { id, movieTitle } = req.params;
 	
@@ -210,6 +194,22 @@ app.delete('/users/:id/:movieTitle', (req, res) => {
 	} else {
 		res.status(400).send('no such user')
 	}
+});
+
+//DELETE user
+app.delete('/users/:Username', (req, res) => {
+  Users.findOneAndRemove({Username: req.params.Username})
+    .then((user) => {
+      if (!user) {
+        res.status(400).send(req.params.Username + ' was not found');
+      } else {
+        res.status(200).send(req.params.Username + ' was deleted.');
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
 });
 
 //automatically route all requests for static files to their corresponding files within the 'public' folder
