@@ -19,273 +19,60 @@ const Director = Models.Director;
 mongoose.set('strictQuery', true);
 
 // allow Mongoose to connect to the database
-mongoose.connect('mongodb://127.0.0.1:27017/movie-apiDB', { useNewUrlParser: true, useUnifiedTopology: true });
-
-// trying to fix "buffering timed out"
-// async function run() {
-//   await mongoose.connect('mongodb://127.0.0.1:27017/movie-apiDB');
-//   mongoose.model('User', schema);
-
-//   await mongoose.model('User').findOne(); // does not work!
-// }
+mongoose.connect('mongodb://127.0.0.1:27017/movie-apiDB', {useNewUrlParser: true, useUnifiedTopology: true});
 
 app.use(bodyParser.json()); //MIDDLEWARE will run every time we go to a specific route
 app.use(bodyParser.urlencoded({extended: true}));
 
-//get all movies with the same genre
-//const genre = movies.filter(movie => movie.genre.name === genreName || movie.genre === genreName);
-
-let users = [
-	{
-		id: 1,
-		name: "Sophie",
-		favoriteMovies: []
-	},
-	{
-		id: 2,
-		name: "Teresa",
-		favoriteMovies: ["Braveheart"]
-	},
-	{
-		id: 3,
-		name: "Kasia",
-		favoriteMovies: []
-	},
-];
-
-let movies = [
-	{
-		title: "Amercian Beauty",
-		year: 1999,
-		director: {
-			name: "Sam Mendes", 
-			birth: 1965.0
-		},
-		main: "Kevin Spacey",
-		genre: {
-			name: "Drama",
-			description: "Some text",
-		},
-	},
-	{
-		title: "Shawshenk Redemption",
-		year: 1994,
-		director: {
-			name: "Frank Darabont", 
-			birth: 1959.0
-		},
-		main: "Tim Robbins",
-		genre: {
-			name: "Drama",
-			description: "Some text",
-		},
-	},
-	{
-		title: "Braveheart",
-		year: 1995,
-		director: {
-			name: "Mel Gibson",
-			birth: 1956.0
-		},
-		main: "Mel Gibson",
-		genre: {
-			name: "Historical drama",
-			description: "Some text",
-		},
-	},
-	{
-		title: "Forrest Gump",
-		year: 1994,
-		director: {
-			name: "Robert Zemeckis",
-			birth: 1952.0
-		},
-		main: "Tom Hanks",
-		genre: "Comedy-drama"
-	},
-	{
-		title: "Fight Club",
-		year: 1999,
-		director: {
-			name: "David Fincher",
-			birth: 1962.0
-		},
-		main: "Brad Pitt",
-		genre: "Pycho-thriller"
-	},
-	{
-		title: "The English Patient",
-		year: 1996,
-		director: {
-			name: "Anthony Minghella",
-			birth: 1954.0
-		},
-		main: "Ralph Fiennes",
-		genre: "Romantic drama"
-	},
-	{
-		title: "Trainspotting",
-		year: 1996,
-		director: {
-			name: "Danny Boyle",
-			birth: 1956.0
-		},
-		main: "Ewan McGregor",
-		genre: "Black comdey-drama"
-	},
-	{
-		title: "Groundhog Day",
-		year: 1993,
-		director: {
-			name: "Joel Coen",
-			birth: 1944.0
-		},
-		main: "Bill Murray",
-		genre: "Comedy"
-	},
-	{
-		title: "The Piano",
-		year: 1993,
-		director: {
-			name: "Jane Campion",
-			birth: 1954.0
-		},
-		main: "Holly Hunter",
-		genre: "Drama"
-	},
-	{
-		title: "Elizabeth",
-		year: 1998,
-		director: {
-			name: "Shekhar Kapur",
-			birth: 1945.0
-		},
-		main: "Cate Blanchet",
-		genre: "Historical drama"
-	},
-];
-
 //ROUTES with Express
-//CREATE new user with Mongoose
-app.post('/users', (req, res) => {
-	Users.findOne({Username: req.body.Username})			// check if user already exists
-		.then((user) => {
-			if (user) {
-				return res.status(400).send(req.body.Username + 'already exists');
-			} else {
-				Users
-					.create({																	// if not, create new user
-						Username: req.body.Username,						// every key correponds to field specified in schema at models.js
-						Password: req.body.Password,
-						Email: req.body.Email,
-						Birthday: req.body.Birthday
-					})
-					.then((user) => {res.status(201).json(user) })
-				.catch((error) => {
-					console.error(error);
-					res.status(500).send('Error: ' + error);
-				})
-			}
-		})
-		.catch((error) => {
-			console.error(error);
-			res.status(500).send('Error: ' + error);
-		});
-	});
 
-//UPDATE user name
-app.put('/users/:id', (req, res) => {
-	const { id } = req.params;
-	const updatedUser = req.body;
-	let user = users.find( user => user.id == id ); // == because we are looking for a string, thruthy
-	if (user) {
-		user.name = updatedUser.name;
-		res.status(200).json(user);
-	} else {
-		res.status(400).send('no such user')
-	}
-});
-
-//DELETE user
-app.delete('/users/:id/', (req, res) => {
-	const { id } = req.params;
-	
-	let user = users.find( user => user.id == id );
-	if (user) {
-		users = users.filter( user => user.id != id);
-		res.status(200).send(' user ${id} has been deleted');
-	} else {
-		res.status(400).send('no such user')
-	}
-});
-
-//CREATE (add) movie to favorites
-app.post('/users/:id/:movieTitle', (req, res) => {
-	const { id, movieTitle } = req.params;
-	
-	let user = users.find( user => user.id == id );
-	if (user) {
-		user.favoriteMovies.push(movieTitle);
-		res.status(200).send('${movieName} has been added to ${id}\'s array');
-	} else {
-		res.status(400).send('no such user')
-	}
-});
-
-//DELETE movie from favorites
-app.delete('/users/:id/:movieTitle', (req, res) => {
-	const { id, movieTitle } = req.params;
-	
-	let user = users.find( user => user.id == id );
-	if (user) {
-		user.favoriteMovies = user.favoriteMovies.filter( title => title !== movieTitle);
-		res.status(200).send('${movieTitle} has been removed from ${id}\'s array');
-	} else {
-		res.status(400).send('no such user')
-	}
-});
-
-//return JSON object containing movie data
-app.get('/movies', (req, res) => {
-	res.status(200).json(movies);
-});
-
-//return textual response
+//READ
+//return textual response on /
 app.get('/', (req, res) => {
 	res.send("This is an API of 90s movies."); //send is an Express function
 });
 
-//automatically route all requests for static files to their corresponding files within the 'public' folder
-app.use(express.static('public'));
-app.get('/documentation', (req, res) => {
-    res.sendFile('public/documentation.html', { root: __dirname });
-  });
+//get all movies
+app.get('/movies', (req, res) => {
+    Movies.find()
+      .then((movies) => {
+        res.status(201).json(movies);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send("Error: " + err);
+      });
+  }
+);
 
-//log requests using Morgan’s “common” format
-app.use(morgan('common'));
+//get all users
+app.get('/users',	function (req, res) {
+	  Users.find()
+		.then(function (users) {
+		  res.status(201).json(users);
+		})
+		.catch(function (err) {
+		  console.error(err);
+		  res.status(500).send("Error: " + err);
+		});
+	}
+  );
 
-//error handling
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send("Oops, something went wrong.");
-});
-
-//READ
 // one movie by title
 app.get('/movies/:title', (req, res) => {
-	//const title = req.params.title;
-	//object destructuring
-	const { title } = req.params;
-	const movie = movies.find( movie => movie.title === title );
-	if (movie) {
-		res.status(200).json(movie);
-	} else {
-		res.status(400).send('no such movie');
-	}
+	Movies.findOne({Title: req.params.Title})
+		.then((movie) => {
+			res.json(movie);
+		})
+		.catch((err) => {
+			console.error.apply(err);
+			res.status(500).send("Error: " + err);
+		})
 });
 
-//genre by name (of genre)
-app.get('/movies/genre/:genreName', (req, res) => {
+//genre by name (of genre) 
+// !!collection "genres" does not exist!!
+app.get('/genre/:Name', (req, res) => {
 	const { genreName } = req.params;
 	const genre = movies.find(movie => movie.genre.name === genreName).genre;
 	if (genre) {
@@ -304,6 +91,140 @@ app.get('/movies/directors/:directorName', (req, res) => {
 	} else {
 		res.status(400).send('no such genre');
 	}
+});
+
+//USERS
+//CREATE new user with Mongoose
+app.post('/users', (req, res) => {
+	Users.findOne({Username: req.body.Username})			// check if user already exists
+		.then((user) => {
+			if (user) {
+				return res.status(400).send(req.body.Username + 'already exists');
+			} else {
+				Users
+					.create({																	// if not, create new user
+						Username: req.body.Username,						// every key correponds to field specified in schema at models.js
+						Password: req.body.Password,
+						Email: req.body.Email,
+						Birthday: req.body.Birthday
+					})
+					.then((user) => {res.status(201).json(user)})
+				.catch((err) => {
+					console.error(err);
+					res.status(500).send('Error: ' + err);
+				})
+			}
+		})
+		.catch((err) => {
+			console.error(err);
+			res.status(500).send('Error: ' + err);
+		});
+});
+
+//READ
+//Get all users
+app.get('/users', (req, res) => {
+	Users.find()
+	  .then((users) => {
+		res.status(201).json(users);
+	  })
+	  .catch((err) => {
+		console.error(erro;
+		res.status(500).send('Error: ' + err);
+	  });
+});
+
+//Get a user by username
+app.get('/users/:Username', (req, res) => {
+	Users.findOne({Username: req.params.Username})
+	  .then((user) => {
+		res.json(user);
+	  })
+	  .catch((err) => {
+		console.error(err);
+		res.status(500).send('Error: ' + err);
+	  });
+});
+
+//UPDATE a user by username
+app.put('/users/:Username', (req, res) => {
+  Users.findOneAndUpdate({Username: req.params.Username}, {$set:
+    {
+      Username: req.body.Username,
+      Password: req.body.Password,
+      Email: req.body.Email,
+      Birthday: req.body.Birthday
+    }
+  },
+  {new: true}, // return the updated document
+  (err, updatedUser) => {
+    if(err) {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    } else {
+      res.json(updatedUser);
+    }
+  });
+});
+
+//DELETE user
+app.delete('/users/:Username', (req, res) => {
+  Users.findOneAndRemove({Username: req.params.Username})
+    .then((user) => {
+      if (!user) {
+        res.status(400).send(req.params.Username + ' was not found');
+      } else {
+        res.status(200).send(req.params.Username + ' was deleted.');
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
+});
+
+//CREATE (add) movie to favorites
+app.post('/users/:Username/movies/:MovieID', (req, res) => {
+  Users.findOneAndUpdate({Username: req.params.Username}, {
+     $push: {FavoriteMovies: req.params.MovieID}
+   },
+   {new: true}, // return the updated document
+  (err, updatedUser) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    } else {
+      res.json(updatedUser);
+    }
+  });
+});
+
+//DELETE movie from favorites
+app.delete('/users/:id/:movieTitle', (req, res) => {
+	const { id, movieTitle } = req.params;
+	
+	let user = users.find( user => user.id == id );
+	if (user) {
+		user.favoriteMovies = user.favoriteMovies.filter( title => title !== movieTitle);
+		res.status(200).send('${movieTitle} has been removed from ${id}\'s array');
+	} else {
+		res.status(400).send('no such user')
+	}
+});
+
+//automatically route all requests for static files to their corresponding files within the 'public' folder
+app.use(express.static('public'));
+app.get('/documentation', (req, res) => {
+    res.sendFile('public/documentation.html', { root: __dirname });
+  });
+
+//log requests using Morgan’s “common” format
+app.use(morgan('common'));
+
+//error handling
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send("Oops, something went wrong.");
 });
 
 //listen for requests
