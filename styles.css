@@ -3,23 +3,32 @@
 }
 
 body {
-  background-color: whitesmoke;
   margin: 20px;
+  background-image: url(patternpad.png);
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 table {
   font-family: arial, sans-serif;
   border-collapse: collapse;
-  width: 80%;
-  border: 2px solid darkblue;
+  width: 100%;
+  border: 2px solid #6BAA75;
 }
 
-td, th {
-  border: 1px solid #dddddd;
+th {
+  border-bottom: 2px solid #6BAA75;
+  border-left: 1px solid whitesmoke;
+  text-align: left;
+  padding: 8px;
+}
+
+td {
+  border: 1px solid whitesmoke;
   text-align: left;
   padding: 8px;
 }
 
 tr:nth-child(even) {
-  background-color: #dddddd;
+  background-color: whitesmoke;
 }
