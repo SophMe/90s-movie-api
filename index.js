@@ -100,7 +100,7 @@ app.get('/movies/Director/:Name', passport.authenticate('jwt', { session: false 
 
 //USERS
 //CREATE new user with Mongoose
-app.post('/users', passport.authenticate('jwt', { session: false }), (req, res) => {
+app.post('/users', (req, res) => {
 	Users.findOne({Username: req.body.Username})			// check if user already exists
 		.then((user) => {
 			if (user) {
