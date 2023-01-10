@@ -5,7 +5,7 @@ const passport = require('passport'),
     
 let Users = Models.User,
     JWTStrategy = passportJWT.Strategy,
-    ExtractJWT = passportJWT.ExtractJWT;
+    ExtractJWT = passportJWT.ExtractJwt;
 
 // define basic HTTP authentication for login requests
 passport.use(new LocalStrategy({
