@@ -59,9 +59,9 @@
         </tr>
         <tr>
             <td>Get data about a genre</td>
-            <td>/movies/:Genre</td>
+            <td>/movies/Genre/:Name</td>
             <td>GET</td>
-            <td>:genre</td>
+            <td>:name</td>
             <td>None</td>
             <td>A JSON object holding data about the genre</td>
         </tr>
@@ -99,10 +99,10 @@
             </td>
         </tr>
         <tr>
-            <td>Allow user to update their username</td>
+            <td>Allow user to update data</td>
             <td>/users/:Username</td>
             <td>UPDATE</td>
-            <td>:Username</td>
+            <td>:username</td>
             <td>None</td>
             <td>A JSON object holding data about the updated information</td>
         </tr>
@@ -110,15 +110,15 @@
             <td>Allow user to add a movie to their favorites</td>
             <td>/users/:Username/movies/:MovieID</td>
             <td>POST</td>
-            <td>:Username, :MovieID</td>
+            <td>:username, :movieID</td>
             <td>None</td>
             <td>A JSON Object holding data about the User and the movie that was added</td>
         </tr>
         <tr>
-            <td>Allow user remove a movie !!old</td>
-            <td>/users/:id/:title</td>
+            <td>Allow user remove a movie</td>
+            <td>/users/:Username/movies/:MovieID</td>
             <td>DELETE</td>
-            <td>:id, :title</td>
+            <td>:username, :movieID</td>
             <td>None</td>
             <td>A JSON Object holding data about the User and the movie that was removed</td>
         </tr>
@@ -126,7 +126,7 @@
             <td>Allow existing user to deregister</td>
             <td>/users/:Username</td>
             <td>DELETE</td>
-            <td>:Username</td>
+            <td>:username</td>
             <td>None</td>
             <td>A text message that the movie was successfully removed</td>
         </tr>
