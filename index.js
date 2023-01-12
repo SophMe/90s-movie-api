@@ -2,7 +2,8 @@
 const express = require('express'),
 	morgan = require('morgan'), //logs to the console
 	bodyParser = require('body-parser'),
-	uuid = require('uuid');
+	uuid = require('uuid'),
+	{check, validationResult} = require ('express-validator'); //server-side input validation
 //declare variable that encapsulates Express' functionality, will route HTTP requests and responses	
 const app = express();
 
@@ -42,6 +43,7 @@ app.use(cors({
 
 let auth = require('./auth')(app); // app ensures that Express is available in auth.js as well
 const passport = require('passport');
+const { check, validationResult } = require('express-validator');
 	require('./passport');
 
 
@@ -117,32 +119,43 @@ app.get('/movies/Director/:Name', passport.authenticate('jwt', { session: false 
 
 //USERS
 //CREATE new user with Mongoose
-app.post('/users', (req, res) => {
-	let hashedPassword = Users.hashPassword(req.body.Password); // hashes password when registering
-	Users.findOne({Username: req.body.Username})								// check if user already exists
-		.then((user) => {
-			if (user) {
-				return res.status(400).send(req.body.Username + 'already exists');
-			} else {
-				Users
-					.create({														// if not, create new user
-						Username: req.body.Username,			// every key correponds to field specified in schema at models.js
-						Password: hashedPassword,
-						Email: req.body.Email,
-						Birthday: req.body.Birthday
-					})
-					.then((user) => {res.status(201).json(user)})
-				.catch((err) => {
-					console.error(err);
-					res.status(500).send('Error: ' + err);
-				})
+app.post('/users', 
+//input validation
+	[check('Username', 'Username is required').isLength({min: 5}),
+	check('Username', 'Username contains non -alphanumeric characters - not allowed.').isAlphanumeric(),
+	check('Password', 'Password is required').not().isEmpty(),
+  check('Email', 'Email does not appear to be valid').isEmail()
+], 
+	(req, res) => {
+		let errors = validationResult(req);
+			if (!errors.isEmpty()) {
+				return res.status(422).json({ errors: errors.array() });
 			}
-		})
-		.catch((err) => {
-			console.error(err);
-			res.status(500).send('Error: ' + err);
-		});
-});
+		let hashedPassword = Users.hashPassword(req.body.Password); // hashes password when registering
+		Users.findOne({Username: req.body.Username})								// check if user already exists
+			.then((user) => {
+				if (user) {
+					return res.status(400).send(req.body.Username + 'already exists');
+				} else {
+					Users
+						.create({														// if not, create new user
+							Username: req.body.Username,			// every key correponds to field specified in schema at models.js
+							Password: hashedPassword,
+							Email: req.body.Email,
+							Birthday: req.body.Birthday
+						})
+						.then((user) => {res.status(201).json(user)})
+						.catch((err) => {
+							console.error(err);
+							res.status(500).send('Error: ' + err);
+						})
+				}
+			})
+			.catch((err) => {
+				console.error(err);
+				res.status(500).send('Error: ' + err);
+			});
+	});
 
 //CREATE (add) movie to favorites 
 app.post('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { session: false }), (req, res) => {
