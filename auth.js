@@ -7,7 +7,7 @@ require('./passport'); // my local file
 let generateJWToken = (user) => {
     return jwt.sign(user, jwtSecret, {
         subject: user.Username, // encoded username
-        expressIn: '7d', // token expires in 7 days, will have to log in again and get new token
+        expiresIn: '7d', // token expires in 7 days, will have to log in again and get new token
         algorithm: 'HS256' // signature
     });
 }
