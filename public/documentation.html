@@ -67,7 +67,7 @@
         </tr>
         <tr>
             <td>Get data about a director by name</td>
-            <td>/movies/director/:Name</td>
+            <td>/movies/Director/:Name</td>
             <td>GET</td>
             <td>:name</td>
             <td>None</td>
@@ -84,6 +84,29 @@
                     Password: "examplepassword",<br>
                     Email: "user@gmail.com",<br>
                     Birthday: 1980-11-23,
+                }
+            </td>
+            <td>
+                A JSON object holding data about the user to add, including an ID:<br>
+                {
+                    _id: ObjectId('1'),<br>
+                    Username: "examplename",<br>
+                    Password: "examplepassword",<br>
+                    Email: "user@gmail.com",<br>
+                    Birthday: 1980-11-23,<br>
+                    FavoriteMovies: [ ]
+                }
+            </td>
+        </tr>
+        <tr>
+            <td>Allow user to log in</td>
+            <td>/login</td>
+            <td>POST</td>
+            <td> - </td>
+            <td>A JSON object holding data about the user to add, structured like:<br>
+                {
+                    Username: "examplename",<br>
+                    Password: "examplepassword",<br>
                 }
             </td>
             <td>
