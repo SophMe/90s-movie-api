@@ -43,7 +43,7 @@ app.use(cors({
 
 let auth = require('./auth')(app); // app ensures that Express is available in auth.js as well
 const passport = require('passport');
-const { check, validationResult } = require('express-validator');
+//const { check, validationResult } = require('express-validator');
 	require('./passport');
 
 
