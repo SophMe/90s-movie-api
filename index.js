@@ -20,7 +20,8 @@ const Directors = Models.Director;
 mongoose.set('strictQuery', true);
 
 //allow Mongoose to connect to the database
-mongoose.connect('mongodb://127.0.0.1:27017/movie-apiDB', {useNewUrlParser: true, useUnifiedTopology: true});
+//mongoose.connect('mongodb://127.0.0.1:27017/movie-apiDB', {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect('process.env.CONNECTION_URI', {useNewUrlParser: true, useUnifiedTopology: true});
 
 app.use(bodyParser.json()); //MIDDLEWARE will run every time we go to a specific route
 app.use(bodyParser.urlencoded({extended: true}));
