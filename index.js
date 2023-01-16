@@ -10,6 +10,7 @@ const app = express();
 //integrate Mongoose into the REST API
 const mongoose = require('mongoose');
 const Models = require('./models.js');
+	require('dotenv').config();
  
 const Movies = Models.Movie; // both defined in models.js
 const Users = Models.User;
@@ -20,8 +21,8 @@ const Directors = Models.Director;
 mongoose.set('strictQuery', true);
 
 //allow Mongoose to connect to the database
-//mongoose.connect('mongodb://127.0.0.1:27017/movie-apiDB', {useNewUrlParser: true, useUnifiedTopology: true});
-mongoose.connect('process.env.CONNECTION_URI', {useNewUrlParser: true, useUnifiedTopology: true});
+//mongoose.connect('mongodb://localhost:27017/movie-apiDB', {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect(process.env.CONNECTION_URI, {useNewUrlParser: true, useUnifiedTopology: true});
 
 app.use(bodyParser.json()); //MIDDLEWARE will run every time we go to a specific route
 app.use(bodyParser.urlencoded({extended: true}));
@@ -30,7 +31,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 //default allows requests from all origins
 const cors = require('cors');
 
-let allowedOrigins = ['http://localhost:8080', 'https://gleeful-hamster-5d7977.netlify.app'];
+let allowedOrigins = ['http://localhost:8080', 'http://testsite.com'];
 app.use(cors({
   origin: (origin, callback) => {
     if(!origin) return callback(null, true);
@@ -133,13 +134,13 @@ app.post('/users',
 				return res.status(422).json({ errors: errors.array() });
 			}
 		let hashedPassword = Users.hashPassword(req.body.Password); // hashes password when registering
-		Users.findOne({Username: req.body.Username})								// check if user already exists
+		Users.findOne({Username: req.body.Username})				// check if user already exists
 			.then((user) => {
 				if (user) {
-					return res.status(400).send(req.body.Username + 'already exists');
+					return res.status(400).send(req.body.Username + ' already exists');
 				} else {
 					Users
-						.create({														// if not, create new user
+						.create({									// if not, create new user
 							Username: req.body.Username,			// every key correponds to field specified in schema at models.js
 							Password: hashedPassword,
 							Email: req.body.Email,
