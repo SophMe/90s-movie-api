@@ -1,17 +1,17 @@
 # 90s movies API
 
 Description
-=========
+---
 
-A server-side component of a “movies” web application. The web application provides users with access to information about different movies, directors, and genres. Users will be able to sign up, update their personal information, and create a list of their favorite movies.
+The server-side component of a “movies” web application. The web application provides users with access to information about different movies, directors, and genres. Users will be able to sign up, update their personal information, and create a list of their favorite movies.
 
 Context
--------
+---
 
 This REST API interacts with a database and stores data about different movies.
 
 Features
---------
+---
 
 *   Return a list of all movies to the user
 *   Return data of a single movie by title to the user
@@ -24,10 +24,10 @@ Features
 *   Allow existing users to deregister (showing only a text that a user email has been removed
 
 URL Endpoints
--------------
+---
 
 | Request                          | URL           | HTTP Method   | Query Parameters | Request body data format | Response body data format | 
-| -------                          | ---           | -----------   | ---------------- | ------------------------ | ------------------------- |
+| -------                          | ---           | -----------   | ---------------- | ------------------------ |-------------------- |
 | Get a list of all movies         |/movies        | GET           | \-               | None                     | A JSON object holding data about all the movies |
 | Get data about a movie by title  |/movies:Title  | GET           | :Title           | None                     | A JSON object holding data about the director |
 | Get data about a genre           |/movies/Genre/:Name| GET       | :Name            | None                     | A JSON object holding data about the genre
