@@ -20,7 +20,7 @@ const Directors = Models.Director;
 //Deprecation warning - suppress
 mongoose.set('strictQuery', true);
 
-//allow Mongoose to connect to the database
+//allow Mongoose to connect to local database or Atlas
 //mongoose.connect('mongodb://localhost:27017/movie-apiDB', {useNewUrlParser: true, useUnifiedTopology: true});
 mongoose.connect(process.env.CONNECTION_URI, {useNewUrlParser: true, useUnifiedTopology: true});
 
@@ -126,8 +126,8 @@ app.post('/users',
 	[check('Username', 'Username is required').isLength({min: 5}),
 	check('Username', 'Username contains non -alphanumeric characters - not allowed.').isAlphanumeric(),
 	check('Password', 'Password is required').not().isEmpty(),
-  check('Email', 'Email does not appear to be valid').isEmail()
-], 
+  	check('Email', 'Email does not appear to be valid').isEmail()
+	], 
 	(req, res) => {
 		let errors = validationResult(req);
 			if (!errors.isEmpty()) {
@@ -164,7 +164,7 @@ app.post('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { sess
 	Users.findOneAndUpdate({ Username: req.params.Username }, {
 		$push: { FavoriteMovies: req.params.MovieID }
 	},
-	{ new: true}, // return updated document
+	{new: true}, // return updated document
 	(err, updatedUser) => {
 		if(err) {
 			console.error(err);
