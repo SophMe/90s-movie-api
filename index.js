@@ -31,7 +31,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 //default allows requests from all origins
 const cors = require('cors');
 
-let allowedOrigins = ['http://localhost:1234', 'https://90s-movie-api-liart.vercel.app', 'http://testsite.com', 'https://www.imdb.com/'];
+let allowedOrigins = ['http://localhost:1234', 'https://90s-movie-api-liart.vercel.app', 'http://testsite.com', 'https://en.wikipedia.org', 'https://www.wikipedia.org/'];
 app.use(cors({
   origin: (origin, callback) => {
     if(!origin) return callback(null, true);
