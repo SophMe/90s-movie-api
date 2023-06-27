@@ -31,20 +31,22 @@ app.use(bodyParser.urlencoded({extended: true}));
 //default allows requests from all origins
 const cors = require('cors');
 
-let allowedOrigins = [ 
-  app.use(cors()) //allow request from all origins
-  // 'http://localhost:1234', 'https://90s-movies.netlify.app/', 'https://90smovies.vercel.app/', 'http://testsite.com', 'https://en.wikipedia.org', 'https://www.wikipedia.org/'
-];
-app.use(cors({
-  origin: (origin, callback) => {
-    if(!origin) return callback(null, true);
-    if(allowedOrigins.indexOf(origin) === -1){ // If a origin is not on the list of allowed origins
-      let message = 'The CORS policy for this application doesn\'t allow access from origin ' + origin;
-      return callback(new Error(message ), false);
-    }
-    return callback(null, true);
-  }
-}));
+// let allowedOrigins = [ 
+//   // 'http://localhost:1234', 'https://90s-movies.netlify.app/', 'https://90smovies.vercel.app/', 'http://testsite.com', 'https://en.wikipedia.org', 'https://www.wikipedia.org/'
+// ];
+
+app.use(cors({})); //allow request from all origins
+
+// app.use(cors({
+//   origin: (origin, callback) => {
+//     if(!origin) return callback(null, true);
+//     if(allowedOrigins.indexOf(origin) === -1){ // If a origin is not on the list of allowed origins
+//       let message = 'The CORS policy for this application doesn\'t allow access from origin ' + origin;
+//       return callback(new Error(message ), false);
+//     }
+//     return callback(null, true);
+//   }
+// }));
 
 let auth = require('./auth')(app); // app ensures that Express is available in auth.js as well
 const passport = require('passport');
