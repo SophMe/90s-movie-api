@@ -207,12 +207,13 @@ app.get('/users/:Username', passport.authenticate('jwt', { session: false }), (r
 
 //UPDATE a user by username
 app.put('/users/:Username', passport.authenticate('jwt', { session: false }), (req, res) => {
+  let oldData = Users.findOne({ Username: req.params.Username });
   Users.findOneAndUpdate({Username: req.params.Username}, {$set:
     {
-      Username: req.body.Username,
-      Password: hashedPassword,
-      Email: req.body.Email,
-      Birthday: req.body.Birthday
+      Username: req.body.Username || oldData.Username,
+      Password: req. body.Password || oldData.Password,
+      Email: req.body.Email || oldData.Email,
+      Birthday: req.body.Birthday || oldData.Birthday
     }
   },
   {new: true}, // return updated document
