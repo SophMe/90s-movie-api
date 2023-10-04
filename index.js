@@ -63,15 +63,15 @@ const passport = require('passport');
 const s3Config = {
   accessKeyID: process.env.AWS_ACCESS_KEY,
   secretAccessKey: process.env.AWS_ACCESS_SECRET,
-  region: 'us-east-1',
-  endpoint: 'http://localhost:4566',
+  region: 'eu-central-1',
+  endpoint: 'http://3.69.148.144',
   forcePathStyle: true
 };
 
 const s3Client = new S3Client(s3Config);
 
 const listObjectsParams = {
-  Bucket: 'testbucket'
+  Bucket: 'IMAGES_BUCKET'
 };
 
 listObjectsCmd = new ListObjectsV2Command(listObjectsParams);
@@ -284,7 +284,7 @@ app.delete('/users/:Username', passport.authenticate('jwt', { session: false }),
 
 //HANDLE IMAGES
 
-const IMAGES_BUCKET = 'testbucket';
+const IMAGES_BUCKET = '90s-movie-client';
 // const UPLOAD_TEMP_PATH = './temp';
 
 app.get('/images', (req, res) => {
