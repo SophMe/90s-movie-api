@@ -11,7 +11,12 @@ const app = express();
 const mongoose = require('mongoose');
 const Models = require('./models.js');
 	require('dotenv').config();
- 
+
+//AWS S3
+const fs = require('fs');
+const fileUpload = require('express-fileupload');
+const { S3Client, ListObjectsV2Command, PutObjectCommand } = require('@aws-sdk/client-s3');
+
 const Movies = Models.Movie; // both defined in models.js
 const Users = Models.User;
 const Genres = Models.Genre;
@@ -26,6 +31,8 @@ mongoose.connect(process.env.CONNECTION_URI, {useNewUrlParser: true, useUnifiedT
 
 app.use(bodyParser.json()); //MIDDLEWARE will run every time we go to a specific route
 app.use(bodyParser.urlencoded({extended: true}));
+app.use('/healthcheck', require('./healthcheck.js'));
+app.use(fileUpload());
 
 //cross-origin resource sharing
 //default allows requests from all origins
@@ -53,6 +60,22 @@ const passport = require('passport');
 //const { check, validationResult } = require('express-validator');
 	require('./passport');
 
+const s3Config = {
+  accessKeyID: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_ACCESS_SECRET,
+  region: 'us-east-1',
+  endpoint: 'http://localhost:4566',
+  forcePathStyle: true
+};
+
+const s3Client = new S3Client(s3Config);
+
+const listObjectsParams = {
+  Bucket: 'testbucket'
+};
+
+listObjectsCmd = new ListObjectsV2Command(listObjectsParams);
+s3Client.send(listObjectsCmd);
 
 //ROUTES with Express
 
@@ -257,6 +280,41 @@ app.delete('/users/:Username', passport.authenticate('jwt', { session: false }),
       console.error(err);
       res.status(500).send('Error: ' + err);
     });
+});
+
+//HANDLE IMAGES
+
+const IMAGES_BUCKET = 'testbucket';
+// const UPLOAD_TEMP_PATH = './temp';
+
+app.get('/images', (req, res) => {
+  const listObjectsParams = {
+    Bucket: IMAGES_BUCKET
+  };
+  s3Client.send(new ListObjectsV2Command(listObjectsParams))
+  .then((listObjectsResponse) => {
+    res.send(listObjectsResponse)
+  });
+});
+
+app.post('/images', (req, res) => {
+  const file = req.files.image;
+  const fileName = req.files.image.name;
+  // const tempPath = `${UPLOAD_TEMP_PATH}/${fileName}`;
+  // file.mv(tempPath, (err) => { res.status(500) });
+  const bucketParams = {
+    Bucket: IMAGES_BUCKET,
+    Key: fileName,
+    Body: file.data,
+  };
+  s3Client.send(new PutObjectCommand(bucketParams), (err, data) => {
+    if (err) {
+      console.log('Error', err);
+      res.status(500).send('Error uploading image to S3 bucket.');
+    } else {
+        res.send(data);
+    }
+  });
 });
 
 //automatically route all requests for static files to their corresponding files within the 'public' folder
