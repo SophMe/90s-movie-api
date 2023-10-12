@@ -17,32 +17,27 @@ const fs = require('fs');
 const fileUpload = require('express-fileupload');
 const { S3Client, ListObjectsV2Command, PutObjectCommand } = require('@aws-sdk/client-s3');
 
-const Movies = Models.Movie; // both defined in models.js
+const Movies = Models.Movie;            // all defined in models.js
 const Users = Models.User;
 const Genres = Models.Genre;
 const Directors = Models.Director;
 
-//Deprecation warning - suppress
-mongoose.set('strictQuery', true);
-
-//allow Mongoose to connect to local database or Atlas
-//mongoose.connect('mongodb://localhost:27017/movie-apiDB', {useNewUrlParser: true, useUnifiedTopology: true});
-mongoose.connect(process.env.CONNECTION_URI, {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.set('strictQuery', true);      //Deprecation warning - suppress
+mongoose.connect(process.env.CONNECTION_URI, {useNewUrlParser: true, useUnifiedTopology: true});      //allow Mongoose to connect Atlas
 
 app.use(bodyParser.json()); //MIDDLEWARE will run every time we go to a specific route
 app.use(bodyParser.urlencoded({extended: true}));
 app.use('/healthcheck', require('./healthcheck.js'));
 app.use(fileUpload());
 
-//cross-origin resource sharing
-//default allows requests from all origins
+//CORS
+
 const cors = require('cors');
-
-// let allowedOrigins = [ 
-//   // 'http://localhost:1234', 'https://90s-movies.netlify.app/', 'https://90smovies.vercel.app/', 'http://testsite.com', 'https://en.wikipedia.org', 'https://www.wikipedia.org/'
-// ];
-
 app.use(cors({})); //allow request from all origins
+
+//let allowedOrigins = [ 
+//  'http://localhost:1234', 'https://90s-movies.netlify.app/', 'https://90smovies.vercel.app/', 'http://testsite.com', 'https://en.wikipedia.org', 'https://www.wikipedia.org/'
+//  ];
 
 // app.use(cors({
 //   origin: (origin, callback) => {
@@ -57,21 +52,15 @@ app.use(cors({})); //allow request from all origins
 
 let auth = require('./auth')(app); // app ensures that Express is available in auth.js as well
 const passport = require('passport');
-//const { check, validationResult } = require('express-validator');
 	require('./passport');
 
+//AWS S3 BUCKET
 const s3Config = {
-  accessKeyID: process.env.AWS_ACCESS_KEY,
-  secretAccessKey: process.env.AWS_ACCESS_SECRET,
   region: 'eu-central-1',
-  endpoint: 'http://3.69.148.144',
-  forcePathStyle: true
 };
-
 const s3Client = new S3Client(s3Config);
-
 const listObjectsParams = {
-  Bucket: 'IMAGES_BUCKET'
+  Bucket: 'CLIENT_BUCKET'
 };
 
 listObjectsCmd = new ListObjectsV2Command(listObjectsParams);
@@ -80,9 +69,8 @@ s3Client.send(listObjectsCmd);
 //ROUTES with Express
 
 //READ
-//return textual response on /
-app.get('/', (req, res) => {
-	res.send("This is an API of 90s movies."); //send is an Express function
+app.get('/', (req, res) => {                      //return textual response on /
+	res.send("This is an API of 90s movies.");      //send is an Express function
 });
 
 //get all movies
@@ -150,8 +138,7 @@ app.get('/movies/Director/:Name', passport.authenticate('jwt', { session: false 
 //USERS
 //CREATE new user with Mongoose
 app.post('/users', 
-//input validation
-	[check('Username', 'Username is required').isLength({min: 5}),
+	[check('Username', 'Username is required').isLength({min: 5}),    //input validation
 	check('Username', 'Username contains non -alphanumeric characters - not allowed.').isAlphanumeric(),
 	check('Password', 'Password is required').not().isEmpty(),
   	check('Email', 'Email does not appear to be valid').isEmail()
@@ -161,14 +148,14 @@ app.post('/users',
 			if (!errors.isEmpty()) {
 				return res.status(422).json({ errors: errors.array() });
 			}
-		let hashedPassword = Users.hashPassword(req.body.Password); // hashes password when registering
-		Users.findOne({Username: req.body.Username})				// check if user already exists
+		let hashedPassword = Users.hashPassword(req.body.Password);     // hashes password when registering
+		Users.findOne({Username: req.body.Username})				            // check if user already exists
 			.then((user) => {
 				if (user) {
 					return res.status(400).send(req.body.Username + ' already exists');
 				} else {
 					Users
-						.create({									// if not, create new user
+						.create({									          // if not, create new user
 							Username: req.body.Username,			// every key correponds to field specified in schema at models.js
 							Password: hashedPassword,
 							Email: req.body.Email,
@@ -204,7 +191,7 @@ app.post('/users/:Username/movies/:MovieID', passport.authenticate('jwt', { sess
 });
 
 //READ
-//Get all users
+//GET all users
 app.get('/users', passport.authenticate('jwt', { session: false }), (req, res) => {
 	Users.find()
 	  .then((users) => {
@@ -216,7 +203,7 @@ app.get('/users', passport.authenticate('jwt', { session: false }), (req, res) =
 	  });
 });
 
-//Get a user by username
+//GET a user by username
 app.get('/users/:Username', passport.authenticate('jwt', { session: false }), (req, res) => {
 	Users.findOne({Username: req.params.Username})
 	  .then((user) => {
@@ -284,12 +271,9 @@ app.delete('/users/:Username', passport.authenticate('jwt', { session: false }),
 
 //HANDLE IMAGES
 
-const IMAGES_BUCKET = '90s-movie-client';
-// const UPLOAD_TEMP_PATH = './temp';
-
 app.get('/images', (req, res) => {
   const listObjectsParams = {
-    Bucket: IMAGES_BUCKET
+    Bucket: CLIENT_BUCKET
   };
   s3Client.send(new ListObjectsV2Command(listObjectsParams))
   .then((listObjectsResponse) => {
@@ -300,10 +284,8 @@ app.get('/images', (req, res) => {
 app.post('/images', (req, res) => {
   const file = req.files.image;
   const fileName = req.files.image.name;
-  // const tempPath = `${UPLOAD_TEMP_PATH}/${fileName}`;
-  // file.mv(tempPath, (err) => { res.status(500) });
   const bucketParams = {
-    Bucket: IMAGES_BUCKET,
+    Bucket: CLIENT_BUCKET,
     Key: fileName,
     Body: file.data,
   };
@@ -317,6 +299,7 @@ app.post('/images', (req, res) => {
   });
 });
 
+//SERVER CONFIGURATION AND MIDDLEWARE
 //automatically route all requests for static files to their corresponding files within the 'public' folder
 app.use(express.static('public'));
 app.get('/documentation', (req, res) => {
@@ -333,10 +316,10 @@ app.use((err, req, res, next) => {
 });
 
 //listen for requests
-// app.listen(8080, () => {
-//   console.log('Your app is listening on port 8080.');
-// });
 const port = process.env.PORT || 8080;
 app.listen(port, '0.0.0.0',() => {
  console.log('Listening on Port ' + port);
 });
+// app.listen(8080, () => {
+//   console.log('Your app is listening on port 8080.');
+// });
