@@ -52,10 +52,10 @@ const passport = require('passport');
 
 // // AWS S3 BUCKET
 const s3Config = {
-  //region: 'eu-central-1',
-  region: 'us-east-1',
-  endpoint: 'http://localhost:4566',
-  forcePathStyle: true
+  region: 'eu-central-1',
+  // region: 'us-east-1',
+  // endpoint: 'http://localhost:4566',
+  // forcePathStyle: true
 };
 
 const s3Client = new S3(s3Config);
