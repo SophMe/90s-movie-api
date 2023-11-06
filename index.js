@@ -2,9 +2,9 @@
 const express = require('express'),
 	morgan = require('morgan'), //logs to the console
 	bodyParser = require('body-parser'),
-	uuid = require('uuid'),
+  // busboy = require('busboy'),
 	{check, validationResult} = require ('express-validator'); //server-side input validation
-//declare variable that encapsulates Express' functionality, will route HTTP requests and responses	
+
 const app = express();
 
 //integrate Mongoose into the REST API
@@ -12,59 +12,56 @@ const mongoose = require('mongoose');
 const Models = require('./models.js');
 	require('dotenv').config();
 
-//AWS S3
+// //AWS S3
+const { S3, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { ListObjectsV2Command } = require('@aws-sdk/client-s3');
 const fs = require('fs');
 const fileUpload = require('express-fileupload');
-const { S3Client, ListObjectsV2Command, PutObjectCommand } = require('@aws-sdk/client-s3');
 
-const Movies = Models.Movie;            // all defined in models.js
+const Movies = Models.Movie;           // all defined in models.js
 const Users = Models.User;
 const Genres = Models.Genre;
 const Directors = Models.Director;
 
-mongoose.set('strictQuery', true);      //Deprecation warning - suppress
-mongoose.connect(process.env.CONNECTION_URI, {useNewUrlParser: true, useUnifiedTopology: true});      //allow Mongoose to connect Atlas
+mongoose.set('strictQuery', true);    //Deprecation warning - suppress
+mongoose.connect(process.env.CONNECTION_URI, {useNewUrlParser: true, useUnifiedTopology: true});           //allow Mongoose to connect Atlas
 
-app.use(bodyParser.json()); //MIDDLEWARE will run every time we go to a specific route
+app.use(bodyParser.json());           //MIDDLEWARE will run every time we go to a specific route
 app.use(bodyParser.urlencoded({extended: true}));
+// app.use(busboy());
 app.use('/healthcheck', require('./healthcheck.js'));
-app.use(fileUpload());
+app.use(fileUpload({ 
+  useTempFiles: true,
+  tempFileDir: 'temp',
+  debug: true
+  // limits: { fileSize: 50 * 1024 * 1024 } 
+}));
+app.use(express.static('public'));
+
+//File size limit
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 //CORS
-
 const cors = require('cors');
 app.use(cors({})); //allow request from all origins
-
-//let allowedOrigins = [ 
-//  'http://localhost:1234', 'https://90s-movies.netlify.app/', 'https://90smovies.vercel.app/', 'http://testsite.com', 'https://en.wikipedia.org', 'https://www.wikipedia.org/'
-//  ];
-
-// app.use(cors({
-//   origin: (origin, callback) => {
-//     if(!origin) return callback(null, true);
-//     if(allowedOrigins.indexOf(origin) === -1){ // If a origin is not on the list of allowed origins
-//       let message = 'The CORS policy for this application doesn\'t allow access from origin ' + origin;
-//       return callback(new Error(message ), false);
-//     }
-//     return callback(null, true);
-//   }
-// }));
 
 let auth = require('./auth')(app); // app ensures that Express is available in auth.js as well
 const passport = require('passport');
 	require('./passport');
 
-//AWS S3 BUCKET
+// // AWS S3 BUCKET
 const s3Config = {
-  region: 'eu-central-1',
-};
-const s3Client = new S3Client(s3Config);
-const listObjectsParams = {
-  Bucket: 'CLIENT_BUCKET'
+  //region: 'eu-central-1',
+  region: 'us-east-1',
+  endpoint: 'http://localhost:4566',
+  forcePathStyle: true
 };
 
-listObjectsCmd = new ListObjectsV2Command(listObjectsParams);
-s3Client.send(listObjectsCmd);
+const s3Client = new S3(s3Config);
+// const listObjectsParams = {
+//   Bucket: 'task4-images-bucket'
+// };
 
 //ROUTES with Express
 
@@ -106,7 +103,7 @@ app.get('/movies/:Title', passport.authenticate('jwt', { session: false }), (req
 			res.json(movie);
 		})
 		.catch((err) => {
-			console.error.apply(err);
+			console.error(err);
 			res.status(500).send("Error: " + err);
 		})
 });
@@ -141,7 +138,7 @@ app.post('/users',
 	[check('Username', 'Username is required').isLength({min: 5}),    //input validation
 	check('Username', 'Username contains non -alphanumeric characters - not allowed.').isAlphanumeric(),
 	check('Password', 'Password is required').not().isEmpty(),
-  	check('Email', 'Email does not appear to be valid').isEmail()
+	check('Email', 'Email does not appear to be valid').isEmail()
 	], 
 	(req, res) => {
 		let errors = validationResult(req);
@@ -270,31 +267,54 @@ app.delete('/users/:Username', passport.authenticate('jwt', { session: false }),
 });
 
 //HANDLE IMAGES
-
+//LIST IMAGES
 app.get('/images', (req, res) => {
   const listObjectsParams = {
-    Bucket: CLIENT_BUCKET
+    Bucket: 'task4-images-bucket',
   };
-  s3Client.send(new ListObjectsV2Command(listObjectsParams))
-  .then((listObjectsResponse) => {
-    res.send(listObjectsResponse)
-  });
+  listObjectsCmd = new ListObjectsV2Command(listObjectsParams);
+  s3Client.send(listObjectsCmd)
+    .then((listObjectsResponse) => {
+      res.send(listObjectsResponse);
+    })
+    .catch((err) => {
+      console.error('Error', err);
+      res.status(500).send('Error listing images in the S3 bucket.');
+    });
 });
 
-app.post('/images', (req, res) => {
-  const file = req.files.image;
-  const fileName = req.files.image.name;
-  const bucketParams = {
-    Bucket: CLIENT_BUCKET,
-    Key: fileName,
-    Body: file.data,
-  };
-  s3Client.send(new PutObjectCommand(bucketParams), (err, data) => {
+// UPLOAD IMAGES
+app.post('/upload', (req, res) => {
+  console.log(req.files.files.name, 'typeof: ', typeof req.files )
+  
+  const file = req.files.files; // Access the uploaded file
+  const fileName = req.files.files.name; // Get the file name
+  const localTempPath = req.files.files.tempFilePath;
+
+    file.mv(localTempPath, (err) => {
     if (err) {
-      console.log('Error', err);
-      res.status(500).send('Error uploading image to S3 bucket.');
+      console.error('Error moving the uploaded image:', err);
+      res.status(500).send('Error moving the uploaded image.');
     } else {
-        res.send(data);
+      const bucketParams = {
+        Bucket: 'task4-images-bucket',
+        Key: fileName,
+        // Body: file.data,
+        Body: fs.createReadStream(localTempPath)    // T
+      };
+
+      s3Client
+        // .putObject(bucketParams)
+        .send(new PutObjectCommand(bucketParams))   // T
+        .then((data) => {
+          fs.unlinkSync(localTempPath);
+          // res.send(data);
+          res.json({ message: 'Image uploaded'});   // T
+        })
+        .catch((err) => {
+          console.error('Error uploading image to S3 bucket:', s3Error);
+          res.status(500).send('Error uploading image to S3 bucket.');
+        });
     }
   });
 });
@@ -302,6 +322,7 @@ app.post('/images', (req, res) => {
 //SERVER CONFIGURATION AND MIDDLEWARE
 //automatically route all requests for static files to their corresponding files within the 'public' folder
 app.use(express.static('public'));
+
 app.get('/documentation', (req, res) => {
     res.sendFile('public/documentation.html', { root: __dirname });
   });
@@ -311,8 +332,9 @@ app.use(morgan('common'));
 
 //error handling
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send("Oops, something went wrong.");
+  console.log('Received request:', req.method, req.url);
+  console.error('Error:', err);
+  res.status(500).send("Oops, something went wrong.");
 });
 
 //listen for requests
@@ -320,6 +342,3 @@ const port = process.env.PORT || 8080;
 app.listen(port, '0.0.0.0',() => {
  console.log('Listening on Port ' + port);
 });
-// app.listen(8080, () => {
-//   console.log('Your app is listening on port 8080.');
-// });
