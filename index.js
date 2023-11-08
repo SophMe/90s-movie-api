@@ -2,7 +2,6 @@
 const express = require('express'),
 	morgan = require('morgan'), //logs to the console
 	bodyParser = require('body-parser'),
-  // busboy = require('busboy'),
 	{check, validationResult} = require ('express-validator'); //server-side input validation
 
 const app = express();
@@ -59,9 +58,6 @@ const s3Config = {
 };
 
 const s3Client = new S3(s3Config);
-// const listObjectsParams = {
-//   Bucket: 'task4-images-bucket'
-// };
 
 //ROUTES with Express
 
@@ -299,17 +295,14 @@ app.post('/upload', (req, res) => {
       const bucketParams = {
         Bucket: 'task4-images-bucket',
         Key: fileName,
-        // Body: file.data,
-        Body: fs.createReadStream(localTempPath)    // T
+        Body: fs.createReadStream(localTempPath)
       };
 
       s3Client
-        // .putObject(bucketParams)
-        .send(new PutObjectCommand(bucketParams))   // T
+        .send(new PutObjectCommand(bucketParams))
         .then((data) => {
           fs.unlinkSync(localTempPath);
-          // res.send(data);
-          res.json({ message: 'Image uploaded'});   // T
+          res.json({ message: 'Image uploaded'});
         })
         .catch((err) => {
           console.error('Error uploading image to S3 bucket:', s3Error);
