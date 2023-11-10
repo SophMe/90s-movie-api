@@ -60,7 +60,7 @@ const s3Config = {
 
 const s3Client = new S3(s3Config);
 // const listObjectsParams = {
-//   Bucket: 'task4-images-bucket'
+//   Bucket: 'task26-images-bucket'
 // };
 
 //ROUTES with Express
@@ -270,7 +270,7 @@ app.delete('/users/:Username', passport.authenticate('jwt', { session: false }),
 //LIST IMAGES
 app.get('/images', (req, res) => {
   const listObjectsParams = {
-    Bucket: 'task4-images-bucket',
+    Bucket: 'task26-images-bucket',
   };
   listObjectsCmd = new ListObjectsV2Command(listObjectsParams);
   s3Client.send(listObjectsCmd)
@@ -297,13 +297,13 @@ app.post('/upload', (req, res) => {
       res.status(500).send('Error moving the uploaded image.');
     } else {
       const bucketParams = {
-        Bucket: 'task4-images-bucket',
+        Bucket: 'task26-images-bucket',
         Key: fileName,
         // Body: file.data,
         Body: fs.createReadStream(localTempPath)    // T
       };
 
-      s3Client
+      s3Clientcd
         // .putObject(bucketParams)
         .send(new PutObjectCommand(bucketParams))   // T
         .then((data) => {
