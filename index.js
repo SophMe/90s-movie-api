@@ -290,6 +290,7 @@ app.post('/upload', (req, res) => {
   const file = req.files.files; // Access the uploaded file
   const fileName = req.files.files.name; // Get the file name
   const localTempPath = req.files.files.tempFilePath;
+  const originalKey = `original-images/${fileName}`;
 
     file.mv(localTempPath, (err) => {
     if (err) {
@@ -298,18 +299,15 @@ app.post('/upload', (req, res) => {
     } else {
       const bucketParams = {
         Bucket: 'task26-images-bucket',
-        Key: fileName,
-        // Body: file.data,
-        Body: fs.createReadStream(localTempPath)    // T
+        Key: originalKey,
+        Body: fs.createReadStream(localTempPath)
       };
 
-      s3Clientcd
-        // .putObject(bucketParams)
-        .send(new PutObjectCommand(bucketParams))   // T
+      s3Client
+        .send(new PutObjectCommand(bucketParams))
         .then((data) => {
           fs.unlinkSync(localTempPath);
-          // res.send(data);
-          res.json({ message: 'Image uploaded'});   // T
+          res.json({ message: 'Image uploaded'});
         })
         .catch((err) => {
           console.error('Error uploading image to S3 bucket:', s3Error);
